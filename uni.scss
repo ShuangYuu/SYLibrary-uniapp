@@ -1,76 +1,82 @@
-/**
- * 这里是uni-app内置的常用样式变量
- *
- * uni-app 官方扩展插件及插件市场（https://ext.dcloud.net.cn）上很多三方插件均使用了这些样式变量
- * 如果你是插件开发者，建议你使用scss预处理，并在插件代码中直接使用这些变量（无需 import 这个文件），方便用户通过搭积木的方式开发整体风格一致的App
- *
- */
+/* ====================================
+   SYLibrary - "Warm Bibliophile" Theme
+   ==================================== */
 
-/**
- * 如果你是App开发者（插件使用者），你可以通过修改这些变量来定制自己的插件主题，实现自定义主题功能
- *
- * 如果你的项目同样使用了scss预处理，你也可以直接在你的 scss 代码中使用如下变量，同时无需 import 这个文件
- */
+/* --- Color Palette --- */
+$primary: #1B2A4A;
+$primary-light: #2C4266;
+$primary-dark: #0F1A30;
 
-/* 颜色变量 */
+$accent: #C9953E;
+$accent-light: #DFB06A;
+$accent-dark: #A67A2E;
 
-/* 行为相关颜色 */
-$uni-color-primary: #007aff;
-$uni-color-success: #4cd964;
-$uni-color-warning: #f0ad4e;
-$uni-color-error: #dd524d;
+$warm-bg: #F5F0E8;
+$warm-surface: #FAF7F2;
+$cream: #FDFBF8;
 
-/* 文字基本颜色 */
-$uni-text-color:#333;//基本色
-$uni-text-color-inverse:#fff;//反色
-$uni-text-color-grey:#999;//辅助灰色，如加载更多的提示信息
-$uni-text-color-placeholder: #808080;
-$uni-text-color-disable:#c0c0c0;
+$text-primary: #2C2420;
+$text-secondary: #6B5E55;
+$text-muted: #9C8F85;
+$text-inverse: #FDFBF8;
 
-/* 背景颜色 */
-$uni-bg-color:#ffffff;
-$uni-bg-color-grey:#f8f8f8;
-$uni-bg-color-hover:#f1f1f1;//点击状态颜色
-$uni-bg-color-mask:rgba(0, 0, 0, 0.4);//遮罩颜色
+$danger: #8B3A3A;
+$success: #4A7C59;
 
-/* 边框颜色 */
-$uni-border-color:#c8c7cc;
+$border-light: #E8E2D8;
+$border-medium: #D4CBC0;
 
-/* 尺寸变量 */
+$shadow-sm: 0 2rpx 8rpx rgba(44, 36, 32, 0.06);
+$shadow-md: 0 4rpx 16rpx rgba(44, 36, 32, 0.08);
+$shadow-lg: 0 8rpx 32rpx rgba(44, 36, 32, 0.12);
 
-/* 文字尺寸 */
-$uni-font-size-sm:12px;
-$uni-font-size-base:14px;
-$uni-font-size-lg:16px;
+/* --- Typography Scale --- */
+$font-xs: 22rpx;
+$font-sm: 26rpx;
+$font-base: 28rpx;
+$font-md: 30rpx;
+$font-lg: 34rpx;
+$font-xl: 40rpx;
+$font-2xl: 48rpx;
+$font-3xl: 56rpx;
 
-/* 图片尺寸 */
-$uni-img-size-sm:20px;
-$uni-img-size-base:26px;
-$uni-img-size-lg:40px;
+/* --- Spacing --- */
+$spacing-xs: 8rpx;
+$spacing-sm: 16rpx;
+$spacing-md: 24rpx;
+$spacing-lg: 32rpx;
+$spacing-xl: 48rpx;
+$spacing-2xl: 64rpx;
 
-/* Border Radius */
-$uni-border-radius-sm: 2px;
-$uni-border-radius-base: 3px;
-$uni-border-radius-lg: 6px;
-$uni-border-radius-circle: 50%;
+/* --- Border Radius --- */
+$radius-sm: 8rpx;
+$radius-md: 16rpx;
+$radius-lg: 24rpx;
+$radius-xl: 32rpx;
+$radius-round: 50%;
 
-/* 水平间距 */
-$uni-spacing-row-sm: 5px;
-$uni-spacing-row-base: 10px;
-$uni-spacing-row-lg: 15px;
+/* --- Mixins --- */
+@mixin card {
+	background: $cream;
+	border-radius: $radius-lg;
+	box-shadow: $shadow-sm;
+}
 
-/* 垂直间距 */
-$uni-spacing-col-sm: 4px;
-$uni-spacing-col-base: 8px;
-$uni-spacing-col-lg: 12px;
+@mixin section-title {
+	font-size: $font-lg;
+	font-weight: 600;
+	color: $text-primary;
+	padding: $spacing-md $spacing-lg;
+	position: relative;
 
-/* 透明度 */
-$uni-opacity-disabled: 0.3; // 组件禁用态的透明度
-
-/* 文章场景相关 */
-$uni-color-title: #2C405A; // 文章标题颜色
-$uni-font-size-title:20px;
-$uni-color-subtitle: #555555; // 二级标题颜色
-$uni-font-size-subtitle:26px;
-$uni-color-paragraph: #3F536E; // 文章段落颜色
-$uni-font-size-paragraph:15px;
+	&::before {
+		content: '';
+		display: inline-block;
+		width: 6rpx;
+		height: 28rpx;
+		background: $accent;
+		border-radius: 3rpx;
+		margin-right: $spacing-sm;
+		vertical-align: middle;
+	}
+}

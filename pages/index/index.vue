@@ -1,50 +1,121 @@
 <template>
-    <view class="container">
-        <swiper 
-			:indicator-dots="true" 
-			:autoplay="true"
-			class="swiper-box"
-		>
-			<swiper-item v-for="item in swiperList" :key="item.id">
-				<view class="banner-wrapper" @click="handleBannerClick(item)">
-					<image :src="item.imageUrl" mode="aspectFill" class="banner-image"/>
+	<view class="page-home">
+		<!-- Banner Section -->
+		<view class="banner-section">
+			<swiper
+				:indicator-dots="true"
+				:autoplay="true"
+				class="banner-swiper"
+				indicator-color="rgba(253, 251, 248, 0.4)"
+				indicator-active-color="#C9953E"
+				circular
+			>
+				<swiper-item v-for="item in swiperList" :key="item.id">
+					<view class="banner-slide" @click="handleBannerClick(item)">
+						<image :src="item.imageUrl" mode="aspectFill" class="banner-img" />
+						<view class="banner-overlay" />
+					</view>
+				</swiper-item>
+			</swiper>
+		</view>
+
+		<!-- Quick Actions -->
+		<view class="quick-actions">
+			<view class="quick-action-item" @click="handleQuickSearch">
+				<view class="quick-icon">
+					<text class="quick-icon-text">&#x1F50D;</text>
 				</view>
-			</swiper-item>
-		</swiper>
-        
-        <view class="divider-line" />
-        
-        <view class="section-title">新书速递 > </view>
-        <scroll-view scroll-x="true" class="horizontal-list">
-			<view class="horizontal-list-content">
-				<view class="book-item" v-for="book in newBookList" :key="book.id">
-					<image :src="book.imageUrl" mode="aspectFill" class="book-cover" @click="handleBannerClick(book)"/>
-					<text class="book-name">{{ book.name }}</text>
+				<text class="quick-label">搜书</text>
+			</view>
+			<view class="quick-action-item" @click="handleQuickCategory">
+				<view class="quick-icon">
+					<text class="quick-icon-text">&#x1F4DA;</text>
+				</view>
+				<text class="quick-label">分类</text>
+			</view>
+			<view class="quick-action-item" @click="handleQuickHot">
+				<view class="quick-icon">
+					<text class="quick-icon-text">&#x1F525;</text>
+				</view>
+				<text class="quick-label">热门</text>
+			</view>
+			<view class="quick-action-item" @click="handleQuickMine">
+				<view class="quick-icon">
+					<text class="quick-icon-text">&#x1F464;</text>
+				</view>
+				<text class="quick-label">我的</text>
+			</view>
+		</view>
+
+		<!-- New Books Section -->
+		<view class="section-header">
+			<view class="section-header-left">
+				<view class="section-accent" />
+				<text class="section-title">新书速递</text>
+			</view>
+			<text class="section-more">更多 &gt;</text>
+		</view>
+		<scroll-view scroll-x="true" class="book-scroll" show-scrollbar="false">
+			<view class="book-scroll-content">
+				<view
+					class="book-card"
+					v-for="book in newBookList"
+					:key="book.id"
+					@click="handleBannerClick(book)"
+				>
+					<view class="book-card-cover-wrap">
+						<image :src="book.imageUrl" mode="aspectFill" class="book-card-cover" />
+					</view>
+					<text class="book-card-title">{{ book.name }}</text>
 				</view>
 			</view>
 		</scroll-view>
-		
-		<view class="divider-line" />
 
-        <view class="section-title">热门借阅榜单 > </view>
-        <view class="vertical-list">
-            </view>
-        
-    </view>
+		<!-- Hot Borrowing Section -->
+		<view class="section-header">
+			<view class="section-header-left">
+				<view class="section-accent" />
+				<text class="section-title">热门借阅</text>
+			</view>
+			<text class="section-more">更多 &gt;</text>
+		</view>
+		<view class="hot-list">
+			<view
+				class="hot-item"
+				v-for="(book, index) in hotBookList"
+				:key="book.id"
+				@click="handleBannerClick(book)"
+			>
+				<view class="hot-rank" :class="{'hot-rank-gold': index === 0, 'hot-rank-silver': index === 1, 'hot-rank-bronze': index === 2}">
+					<text class="hot-rank-text">{{ index + 1 }}</text>
+				</view>
+				<image :src="book.imageUrl" mode="aspectFill" class="hot-cover" />
+				<view class="hot-info">
+					<text class="hot-name">{{ book.name }}</text>
+					<text class="hot-author" v-if="book.author">作者：{{ book.author }}</text>
+					<text class="hot-count" v-if="book.borrowCount">借阅 {{ book.borrowCount }} 次</text>
+				</view>
+				<text class="hot-arrow">&gt;</text>
+			</view>
+			<view v-if="hotBookList.length === 0" class="hot-placeholder">
+				<text class="hot-placeholder-text">暂无数据</text>
+			</view>
+		</view>
+	</view>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import UniSearchBar from '@/uni_modules/uni-search-bar/components/uni-search-bar/uni-search-bar.vue'
 
 const swiperList = ref();
 const newBookList = ref();
+const hotBookList = ref([]);
 
 const getBannerData = () => {
 	uni.request({
 		url: 'http://localhost:8080/book/swiper',
 		method: 'GET',
-		success: (res) => {        
+		success: (res) => {
 			if(res.statusCode === 200) {
 				swiperList.value = res.data.data;
 				console.log('轮换内容加载成功: ', res.data);
@@ -68,7 +139,6 @@ const getScrollData = () => {
 		},
 		error: (res) => {
 			console.error('横向滚动内容加载失败: ', res.data)
-
 		}
 	})
 }
@@ -85,111 +155,253 @@ const handleBannerClick = (item) => {
 		fail(error) {
 			console.error('跳转失败: ', error);
 		}
-	});	
+	});
 }
 
+const handleQuickSearch = () => {
+	uni.switchTab({ url: '/pages/search/search' });
+}
+const handleQuickCategory = () => {
+	uni.showToast({ title: '功能开发中', icon: 'none' });
+}
+const handleQuickHot = () => {
+	// scroll to hot section
+}
+const handleQuickMine = () => {
+	uni.switchTab({ url: '/pages/user/user' });
+}
 </script>
 
-<style>
-html, body {
-    /* 确保根元素撑开，以便内部元素计算 100% 高度 */
-    height: 100%; 
-    /* 强制解除任何可能的 overflow: hidden 限制 */
-    overflow-y: auto !important;
-    overflow-x: hidden;
-}
-
-/* Uni-App 的页面根元素 */
-page {
-    /* 强制 page 元素能够被 body/html 撑开 */
-    height: 100%; 
-    /* 确保 page 内部的内容可以滚动 */
-    overflow-y: auto; 
-}
-</style>
-
 <style scoped>
-.swiper-box{
-	width: 100%;
-	height: 900rpx;
-	
-	padding: 0;
-	margin: 0;
-	box-sizing: border-box;
+.page-home {
+	max-width: 750rpx;
+	margin: 0 auto;
+	padding-bottom: 20rpx;
+	background: #F5F0E8;
+	min-height: 100vh;
 }
 
-.swiper-item, .banner-wrapper, .banner-image{
+/* ====== Banner ====== */
+.banner-section {
+	padding: 24rpx 24rpx 0;
+}
+.banner-swiper {
+	width: 100%;
+	height: 340rpx;
+	border-radius: 24rpx;
+	overflow: hidden;
+}
+.banner-slide {
+	position: relative;
 	width: 100%;
 	height: 100%;
 }
-
-.section-title{
-	color: royalblue;
-	font-size: 35rpx;
-	margin: 0 8rpx;
-}
-
-.horizontal-list{
-	height: 330rpx;
+.banner-img {
 	width: 100%;
+	height: 100%;
+}
+.banner-overlay {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	height: 40%;
+	background: linear-gradient(to top, rgba(27,42,74,0.3), transparent);
 }
 
-.horizontal-list-content {
-    display: flex;
+/* ====== Quick Actions ====== */
+.quick-actions {
+	display: flex;
+	justify-content: space-around;
+	padding: 32rpx 24rpx;
+	background: #FAF7F2;
+	margin: 24rpx;
+	border-radius: 24rpx;
+	box-shadow: 0 2rpx 12rpx rgba(44, 36, 32, 0.05);
+}
+.quick-action-item {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 12rpx;
+}
+.quick-icon {
+	width: 88rpx;
+	height: 88rpx;
+	border-radius: 50%;
+	background: #F5F0E8;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: transform 0.2s;
+}
+.quick-action-item:active .quick-icon {
+	transform: scale(0.92);
+}
+.quick-icon-text {
+	font-size: 36rpx;
+}
+.quick-label {
+	font-size: 24rpx;
+	color: #6B5E55;
+	font-weight: 500;
+}
+
+/* ====== Section Header ====== */
+.section-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 16rpx 24rpx 12rpx;
+}
+.section-header-left {
+	display: flex;
+	align-items: center;
+	gap: 12rpx;
+}
+.section-accent {
+	width: 6rpx;
+	height: 28rpx;
+	background: #C9953E;
+	border-radius: 3rpx;
+}
+.section-title {
+	font-size: 32rpx;
+	font-weight: 600;
+	color: #2C2420;
+}
+.section-more {
+	font-size: 24rpx;
+	color: #9C8F85;
+}
+
+/* ====== Book Scroll (Horizontal) ====== */
+.book-scroll {
+	width: 100%;
+	padding: 8rpx 0 16rpx;
+}
+.book-scroll-content {
+	display: flex;
 	flex-wrap: nowrap;
-	
-    /* 可以添加一些垂直方向的内边距 */
-    padding: 10rpx 0;
+	padding: 0 24rpx;
+	gap: 20rpx;
 }
-
-.book-item {
+.book-card {
 	flex-shrink: 0;
-    /* 设置每本书的固定宽度和高度 */
-    width: 160rpx; 
-	height: 320rpx;/* 略小于容器高度 */
-    
-    /* 左右间距 */
-    margin-right: 10rpx; 
-    
-    /* 布局：封面和标题垂直排列 */
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
+	width: 160rpx;
+	display: flex;
+	flex-direction: column;
+	gap: 10rpx;
 }
-
-.book-cover {
-    /* 关键：必须设置明确的宽度和高度 */
-    width: 160rpx;  /* 必须与 book-item 的宽度一致 */
-    height: 250rpx; /* 明确指定图片显示的高度，留出空间给标题 */
-    
-    /* 关键：使用 aspectFill 保持比例并裁剪，而不是被拉伸 */
-    /* mode="aspectFill" 属性在 HTML 中设置了，但 CSS 尺寸是基础 */
+.book-card-cover-wrap {
+	width: 160rpx;
+	height: 220rpx;
+	border-radius: 12rpx;
+	overflow: hidden;
+	box-shadow: 0 4rpx 12rpx rgba(44, 36, 32, 0.1);
+	transition: transform 0.2s;
 }
-
-.book-name {
-    font-size: 20rpx;
-    color: #333;
-    margin-top: 5rpx;
-    width: 100%;
-    text-align: left;
-    
-    /* 1. 必须使用块级元素 */
-	display: -webkit-box; 
-	
-	/* 2. 限制显示的行数 */
-	-webkit-line-clamp: 2; /* 核心：限制最多显示 2 行 */
-	
-	/* 3. 垂直排列，这是 -webkit-line-clamp 的必要条件 */
-	-webkit-box-orient: vertical; 
-	
-	/* 4. 隐藏溢出内容，激活省略号 */
+.book-card:active .book-card-cover-wrap {
+	transform: scale(0.96);
+}
+.book-card-cover {
+	width: 100%;
+	height: 100%;
+}
+.book-card-title {
+	font-size: 22rpx;
+	color: #2C2420;
+	line-height: 1.3;
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
 	overflow: hidden;
 }
 
-.divider-line{
-	height: 1rpx;
-	background-color: darkturquoise;
-	margin: 10rpx 0;
+/* ====== Hot List ====== */
+.hot-list {
+	padding: 0 24rpx;
+	display: flex;
+	flex-direction: column;
+	gap: 16rpx;
 }
-
+.hot-item {
+	display: flex;
+	align-items: center;
+	gap: 20rpx;
+	padding: 16rpx;
+	background: #FAF7F2;
+	border-radius: 16rpx;
+	box-shadow: 0 2rpx 8rpx rgba(44, 36, 32, 0.04);
+	transition: transform 0.15s;
+}
+.hot-item:active {
+	transform: scale(0.98);
+}
+.hot-rank {
+	width: 44rpx;
+	height: 44rpx;
+	border-radius: 10rpx;
+	background: #E8E2D8;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+}
+.hot-rank-gold {
+	background: linear-gradient(135deg, #C9953E, #DFB06A);
+}
+.hot-rank-silver {
+	background: linear-gradient(135deg, #B0B0B0, #D0D0D0);
+}
+.hot-rank-bronze {
+	background: linear-gradient(135deg, #A67A2E, #C9953E);
+}
+.hot-rank-text {
+	font-size: 22rpx;
+	font-weight: 700;
+	color: #FDFBF8;
+}
+.hot-cover {
+	width: 80rpx;
+	height: 110rpx;
+	border-radius: 8rpx;
+	flex-shrink: 0;
+}
+.hot-info {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	gap: 6rpx;
+	min-width: 0;
+}
+.hot-name {
+	font-size: 28rpx;
+	font-weight: 600;
+	color: #2C2420;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.hot-author {
+	font-size: 22rpx;
+	color: #9C8F85;
+}
+.hot-count {
+	font-size: 20rpx;
+	color: #C9953E;
+}
+.hot-arrow {
+	font-size: 28rpx;
+	color: #D4CBC0;
+	flex-shrink: 0;
+}
+.hot-placeholder {
+	padding: 48rpx 0;
+	text-align: center;
+}
+.hot-placeholder-text {
+	font-size: 26rpx;
+	color: #9C8F85;
+}
 </style>

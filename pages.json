@@ -1,53 +1,68 @@
 {
-	"pages": [ //pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
+	"pages": [
 		{
 			"path": "pages/index/index",
 			"style": {
-				"navigationBarTitleText": "SYLibrary"
+				"navigationBarTitleText": "SYLibrary",
+				"navigationBarBackgroundColor": "#1B2A4A",
+				"navigationBarTextStyle": "white"
 			}
 		},
 		{
 			"path": "pages/search/search",
 			"style": {
-				"navigationBarTitleText": "搜索"
+				"navigationBarTitleText": "探索馆藏",
+				"navigationBarBackgroundColor": "#1B2A4A",
+				"navigationBarTextStyle": "white"
 			}
 		},
 		{
 			"path": "pages/user/user",
 			"style": {
-				"navigationBarTitleText": "个人中心"
+				"navigationBarTitleText": "个人中心",
+				"navigationBarBackgroundColor": "#1B2A4A",
+				"navigationBarTextStyle": "white"
 			}
 		},
 		{
 			"path": "pages/book/show",
 			"style": {
-				"navigationBarTitleText": "详情"
+				"navigationBarTitleText": "书籍详情",
+				"navigationBarBackgroundColor": "#1B2A4A",
+				"navigationBarTextStyle": "white"
 			}
 		},
 		{
 			"path": "pages/user/login",
 			"style": {
-				"navigationBarTitleText": "登录到您的账户" 
+				"navigationBarTitleText": "读者登录",
+				"navigationBarBackgroundColor": "#1B2A4A",
+				"navigationBarTextStyle": "white",
+				"app-plus": {
+					"titleView": false
+				}
 			}
 		},
 		{
 			"path": "pages/user/settings",
 			"style": {
-				"navigationBarTitleText": "设置"
+				"navigationBarTitleText": "账户设置",
+				"navigationBarBackgroundColor": "#1B2A4A",
+				"navigationBarTextStyle": "white"
 			}
 		}
 	],
 	"globalStyle": {
-		"navigationBarTextStyle": "black",
+		"navigationBarTextStyle": "white",
 		"navigationBarTitleText": "SYLibrary",
-		"navigationBarBackgroundColor": "#F8F8F8",
-		"backgroundColor": "#F8F8F8"
+		"navigationBarBackgroundColor": "#1B2A4A",
+		"backgroundColor": "#F5F0E8"
 	},
 	"tabBar": {
-		"color": "#999",
-		"selectedColor": "#3366ff",
-		"backgroundColor": "#fff",
-		"borderStyle": "black",
+		"color": "#9C8F85",
+		"selectedColor": "#C9953E",
+		"backgroundColor": "#FDFBF8",
+		"borderStyle": "white",
 		"list": [
 			{
 				"pagePath": "pages/index/index",
@@ -65,7 +80,7 @@
 				"pagePath": "pages/user/user",
 				"text": "我的",
 				"iconPath": "static/icon_user.png",
-				"selectedIconPath": "static/icon_user_active.png" 
+				"selectedIconPath": "static/icon_user_active.png"
 			}
 		]
 	},
