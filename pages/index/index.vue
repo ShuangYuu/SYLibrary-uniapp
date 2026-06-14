@@ -1,17 +1,18 @@
 <template>
 	<view class="page-home">
 		<!-- Banner Section -->
-		<view class="banner-section">
+		<view class="banner-section" v-if="swiperList.length > 0">
 			<swiper
 				:indicator-dots="true"
 				:autoplay="true"
 				class="banner-swiper"
 				indicator-color="rgba(253, 251, 248, 0.4)"
 				indicator-active-color="#C9953E"
+				:key="swiperList.length"
 				circular
 			>
-				<swiper-item v-for="item in swiperList" :key="item.id">
-					<view class="banner-slide" @click="handleBannerClick(item)">
+				<swiper-item v-for="item in swiperList" :key="item.book_id || item.id">
+					<view class="banner-slide" @click="goBookDetail(item)">
 						<image :src="item.imageUrl" mode="aspectFill" class="banner-img" />
 						<view class="banner-overlay" />
 					</view>
@@ -37,7 +38,7 @@
 				<view class="quick-icon">
 					<text class="quick-icon-text">&#x1F525;</text>
 				</view>
-				<text class="quick-label">热门</text>
+				<text class="quick-label">最近</text>
 			</view>
 			<view class="quick-action-item" @click="handleQuickMine">
 				<view class="quick-icon">
@@ -47,11 +48,11 @@
 			</view>
 		</view>
 
-		<!-- New Books Section -->
+		<!-- Recent Books Section -->
 		<view class="section-header">
 			<view class="section-header-left">
 				<view class="section-accent" />
-				<text class="section-title">新书速递</text>
+				<text class="section-title">最近上架</text>
 			</view>
 			<text class="section-more">更多 &gt;</text>
 		</view>
@@ -59,9 +60,9 @@
 			<view class="book-scroll-content">
 				<view
 					class="book-card"
-					v-for="book in newBookList"
-					:key="book.id"
-					@click="handleBannerClick(book)"
+					v-for="book in recentBookList"
+					:key="book.book_id || book.id"
+					@click="goBookDetail(book)"
 				>
 					<view class="book-card-cover-wrap">
 						<image :src="book.imageUrl" mode="aspectFill" class="book-card-cover" />
@@ -70,21 +71,24 @@
 				</view>
 			</view>
 		</scroll-view>
+		<view v-if="recentBookList.length === 0" class="book-placeholder">
+			<text class="book-placeholder-text">暂无上架图书</text>
+		</view>
 
 		<!-- Hot Borrowing Section -->
-		<view class="section-header">
+		<view class="section-header" v-if="hotBookList.length > 0">
 			<view class="section-header-left">
 				<view class="section-accent" />
 				<text class="section-title">热门借阅</text>
 			</view>
 			<text class="section-more">更多 &gt;</text>
 		</view>
-		<view class="hot-list">
+		<view class="hot-list" v-if="hotBookList.length > 0">
 			<view
 				class="hot-item"
 				v-for="(book, index) in hotBookList"
-				:key="book.id"
-				@click="handleBannerClick(book)"
+				:key="book.book_id || book.id"
+				@click="goBookDetail(book)"
 			>
 				<view class="hot-rank" :class="{'hot-rank-gold': index === 0, 'hot-rank-silver': index === 1, 'hot-rank-bronze': index === 2}">
 					<text class="hot-rank-text">{{ index + 1 }}</text>
@@ -97,9 +101,6 @@
 				</view>
 				<text class="hot-arrow">&gt;</text>
 			</view>
-			<view v-if="hotBookList.length === 0" class="hot-placeholder">
-				<text class="hot-placeholder-text">暂无数据</text>
-			</view>
 		</view>
 	</view>
 </template>
@@ -107,48 +108,34 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 
-const swiperList = ref();
-const newBookList = ref();
+const swiperList = ref([]);
+const recentBookList = ref([]);
 const hotBookList = ref([]);
 
-const getBannerData = () => {
+const getHomeData = () => {
 	uni.request({
-		url: 'http://localhost:8080/book/swiper',
+		url: 'http://localhost:8080/book/home',
 		method: 'GET',
 		success: (res) => {
-			if(res.statusCode === 200) {
-				swiperList.value = res.data.data;
-				console.log('轮换内容加载成功: ', res.data);
+			if (res.statusCode === 200 && res.data && res.data.data) {
+				const homeData = res.data.data;
+				swiperList.value = Array.isArray(homeData.banners) ? homeData.banners : [];
+				recentBookList.value = Array.isArray(homeData.recentBooks) ? homeData.recentBooks : [];
+				hotBookList.value = Array.isArray(homeData.hotBooks) ? homeData.hotBooks : [];
+				console.log('首页内容加载成功: ', res.data);
 			}
 		},
-		error: (res) => {
-			console.error('轮换内容加载失败: ', res.data);
-		}
-	})
-}
-
-const getScrollData = () => {
-	uni.request({
-		url: 'http://localhost:8080/book/newBooks',
-		method: 'GET',
-		success: (res) => {
-			if(res.statusCode === 200){
-				newBookList.value = res.data.data;
-				console.log('横向滚动内容加载成功: ', res.data)
-			}
-		},
-		error: (res) => {
-			console.error('横向滚动内容加载失败: ', res.data)
+		fail: (res) => {
+			console.error('首页内容加载失败: ', res);
 		}
 	})
 }
 
 onMounted(() => {
-	getBannerData();
-	getScrollData();
+	getHomeData();
 });
 
-const handleBannerClick = (item) => {
+const goBookDetail = (item) => {
 	const dataString = encodeURIComponent(JSON.stringify(item));
 	uni.navigateTo({
 		url: `/pages/book/show?book=${ dataString }`,
@@ -165,7 +152,7 @@ const handleQuickCategory = () => {
 	uni.showToast({ title: '功能开发中', icon: 'none' });
 }
 const handleQuickHot = () => {
-	// scroll to hot section
+	uni.pageScrollTo({ selector: '.book-scroll', duration: 300 });
 }
 const handleQuickMine = () => {
 	uni.switchTab({ url: '/pages/user/user' });
@@ -316,6 +303,14 @@ const handleQuickMine = () => {
 	-webkit-line-clamp: 2;
 	-webkit-box-orient: vertical;
 	overflow: hidden;
+}
+.book-placeholder {
+	padding: 40rpx 0 28rpx;
+	text-align: center;
+}
+.book-placeholder-text {
+	font-size: 26rpx;
+	color: #9C8F85;
 }
 
 /* ====== Hot List ====== */

@@ -31,7 +31,7 @@
 			</view>
 			<view class="stat-divider" />
 			<view class="stat-item">
-				<text class="stat-value">0</text>
+				<text class="stat-value">{{ favoriteCount }}</text>
 				<text class="stat-label">收藏</text>
 			</view>
 		</view>
@@ -73,7 +73,8 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue';
+import { onShow } from '@dcloudio/uni-app';
+import { ref } from 'vue';
 import request from '@/utils/request'
 
 const userInfo = ref({
@@ -82,6 +83,17 @@ const userInfo = ref({
 	userImage: '',
 	phone: ''
 })
+const favoriteCount = ref(0)
+
+const resetUserInfo = () => {
+	userInfo.value = {
+		id: '',
+		username: '',
+		userImage: '',
+		phone: ''
+	};
+	favoriteCount.value = 0;
+}
 
 const menuItems = [
 	{ name: '账户设置', path: '/pages/user/settings', icon: '\u2699\uFE0F', color: '#1B2A4A' },
@@ -90,6 +102,11 @@ const menuItems = [
 ]
 
 const getUserInfo = () => {
+	if (!uni.getStorageSync('accessToken')) {
+		resetUserInfo();
+		return;
+	}
+
 	request({
 		url: 'http://localhost:8080/user/info',
 		method: 'GET',
@@ -112,8 +129,29 @@ const getUserInfo = () => {
 	});
 }
 
-onMounted(() => {
+const getFavoriteCount = () => {
+	if (!uni.getStorageSync('accessToken')) {
+		favoriteCount.value = 0;
+		return;
+	}
+
+	request({
+		url: 'http://localhost:8080/user/favorites',
+		method: 'GET'
+	})
+	.then((res) => {
+		if (res.code === 200) {
+			favoriteCount.value = Array.isArray(res.data) ? res.data.length : 0;
+		}
+	})
+	.catch(() => {
+		favoriteCount.value = 0;
+	});
+}
+
+onShow(() => {
 	getUserInfo();
+	getFavoriteCount();
 })
 
 const logout = () => {
@@ -136,12 +174,7 @@ const logout = () => {
 	.finally(() => {
 		uni.clearStorageSync('accessToken');
 		uni.clearStorageSync('refreshToken');
-		userInfo.value = {
-			id: '',
-			username: '',
-			userImage: '',
-			phone: ''
-		};
+		resetUserInfo();
 	})
 
 }

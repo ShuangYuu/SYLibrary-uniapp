@@ -41,9 +41,10 @@
 				<button class="btn-borrow" @click="handleBorrow">
 					<text>立即借阅</text>
 				</button>
-				<view class="btn-fav" @click="handleFavorite">
-					<text class="fav-icon">&#x2661;</text>
-					<text>收藏</text>
+				<view class="btn-fav" :class="{ 'btn-fav-active': isFavorite }" @click="handleFavorite">
+					<text v-if="isFavorite" class="fav-icon">&#x2665;</text>
+					<text v-else class="fav-icon">&#x2661;</text>
+					<text>{{ isFavorite ? '已收藏' : '收藏' }}</text>
 				</view>
 			</view>
 		</view>
@@ -53,9 +54,10 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { onLoad } from '@dcloudio/uni-app';
-import authMixin from '../../utils/authMixin';
+import request from '@/utils/request'
 
 const book = ref({});
+const isFavorite = ref(false);
 
 const tagList = computed(() => {
 	if (!book.value.tags) return []
@@ -66,6 +68,7 @@ onLoad((options) => {
 	if(options.book){
 		book.value = JSON.parse(decodeURIComponent(options.book));
 		console.log('获取书本数据成功: ', book);
+		loadFavoriteState();
 	}
 });
 
@@ -74,7 +77,51 @@ const handleBorrow = () => {
 }
 
 const handleFavorite = () => {
-	uni.showToast({ title: '收藏功能开发中', icon: 'none' });
+	if (!book.value.book_id) {
+		uni.showToast({ title: '图书信息不完整', icon: 'none' });
+		return;
+	}
+	if (!uni.getStorageSync('accessToken')) {
+		uni.showToast({ title: '请先登录', icon: 'none' });
+		uni.reLaunch({ url: '/pages/user/login' });
+		return;
+	}
+
+	request({
+		url: `http://localhost:8080/user/favorites/${book.value.book_id}`,
+		method: isFavorite.value ? 'DELETE' : 'POST'
+	})
+	.then((res) => {
+		if (res.code === 200) {
+			isFavorite.value = !isFavorite.value;
+			uni.showToast({ title: isFavorite.value ? '已加入收藏' : '已取消收藏', icon: 'success' });
+		} else {
+			uni.showToast({ title: res.msg || '操作失败', icon: 'none' });
+		}
+	})
+	.catch(() => {
+		uni.showToast({ title: '操作失败，请稍后重试', icon: 'none' });
+	});
+}
+
+const loadFavoriteState = () => {
+	if (!book.value.book_id || !uni.getStorageSync('accessToken')) {
+		isFavorite.value = false;
+		return;
+	}
+
+	request({
+		url: `http://localhost:8080/user/favorites/${book.value.book_id}`,
+		method: 'GET'
+	})
+	.then((res) => {
+		if (res.code === 200) {
+			isFavorite.value = Boolean(res.data);
+		}
+	})
+	.catch(() => {
+		isFavorite.value = false;
+	});
 }
 </script>
 
@@ -233,6 +280,11 @@ const handleFavorite = () => {
 .btn-fav:active {
 	border-color: #C9953E;
 	color: #C9953E;
+}
+.btn-fav-active {
+	border-color: #C9953E;
+	color: #C9953E;
+	background: #FAF7F2;
 }
 .fav-icon {
 	font-size: 32rpx;

@@ -34,7 +34,7 @@
 		</view>
 
 		<!-- Search History -->
-		<view class="history-section" v-if="searchHistory.length > 0">
+		<view class="history-section" v-if="!hasSearched && searchHistory.length > 0">
 			<view class="history-header">
 				<text class="history-title">搜索历史</text>
 				<text class="history-clear" @click="clearHistory">清除</text>
@@ -51,8 +51,39 @@
 			</view>
 		</view>
 
+		<view v-if="isLoading" class="empty-state">
+			<text class="empty-text">搜索中...</text>
+		</view>
+
+		<view v-else-if="hasSearched && bookList.length === 0" class="empty-state">
+			<text class="empty-icon">&#x1F50D;</text>
+			<text class="empty-text">没有找到相关图书</text>
+			<text class="empty-hint">换个书名、作者或分类试试</text>
+		</view>
+
+		<view v-else-if="bookList.length > 0" class="result-section">
+			<view class="result-header">
+				<text class="result-title">搜索结果</text>
+				<text class="result-count">共 {{ total }} 本</text>
+			</view>
+			<view
+				class="result-item"
+				v-for="book in bookList"
+				:key="book.book_id || book.id"
+				@click="goBookDetail(book)"
+			>
+				<image class="result-cover" :src="book.imageUrl || '/static/logo.png'" mode="aspectFill" />
+				<view class="result-info">
+					<text class="result-name">{{ book.name }}</text>
+					<text class="result-author" v-if="book.author">作者：{{ book.author }}</text>
+					<text class="result-tags" v-if="book.tags">{{ book.tags }}</text>
+				</view>
+				<text class="result-arrow">&gt;</text>
+			</view>
+		</view>
+
 		<!-- Empty State -->
-		<view class="empty-state" v-if="!keyword && searchHistory.length === 0">
+		<view class="empty-state" v-else-if="!keyword && searchHistory.length === 0">
 			<text class="empty-icon">&#x1F4D6;</text>
 			<text class="empty-text">探索图书馆的丰富馆藏</text>
 			<text class="empty-hint">输入关键词开始搜索</text>
@@ -65,25 +96,56 @@ import { ref } from 'vue'
 
 const keyword = ref('')
 const searchHistory = ref([])
+const hasSearched = ref(false)
+const isLoading = ref(false)
+const bookList = ref([])
+const total = ref(0)
 const hotTags = ref([
 	'文学', '计算机', '经济学', '哲学', '历史',
 	'艺术设计', '自然科学', '社会科学', '语言学习', '心理学'
 ])
 
 const handleSearch = () => {
-	if (!keyword.value.trim()) {
+	const value = keyword.value.trim();
+	if (!value) {
 		uni.showToast({ title: '请输入搜索关键词', icon: 'none' })
 		return
 	}
-	// Add to history
-	if (!searchHistory.value.includes(keyword.value.trim())) {
-		searchHistory.value.unshift(keyword.value.trim())
+	if (!searchHistory.value.includes(value)) {
+		searchHistory.value.unshift(value)
 		if (searchHistory.value.length > 10) {
 			searchHistory.value.pop()
 		}
 	}
-	uni.navigateTo({
-		url: `/pages/book/show?book=${encodeURIComponent(JSON.stringify({ name: keyword.value }))}`
+	hasSearched.value = true
+	isLoading.value = true
+	uni.request({
+		url: 'http://localhost:8080/book/page',
+		method: 'GET',
+		data: {
+			name: value,
+			pageNum: 1,
+			pageSize: 20
+		},
+		success: (res) => {
+			if (res.statusCode === 200 && res.data && res.data.code === 200) {
+				const page = res.data.data || {};
+				bookList.value = Array.isArray(page.list) ? page.list : [];
+				total.value = page.total || bookList.value.length;
+			} else {
+				bookList.value = [];
+				total.value = 0;
+				uni.showToast({ title: res.data?.msg || '搜索失败', icon: 'none' });
+			}
+		},
+		fail: () => {
+			bookList.value = [];
+			total.value = 0;
+			uni.showToast({ title: '搜索失败，请稍后重试', icon: 'none' });
+		},
+		complete: () => {
+			isLoading.value = false;
+		}
 	})
 }
 
@@ -99,6 +161,11 @@ const handleHistoryClick = (item) => {
 
 const clearHistory = () => {
 	searchHistory.value = []
+}
+
+const goBookDetail = (book) => {
+	const dataString = encodeURIComponent(JSON.stringify(book))
+	uni.navigateTo({ url: `/pages/book/show?book=${dataString}` })
 }
 </script>
 
@@ -227,6 +294,72 @@ const clearHistory = () => {
 .history-tag text {
 	font-size: 22rpx;
 	color: #9C8F85;
+}
+
+/* ====== Results ====== */
+.result-section {
+	display: flex;
+	flex-direction: column;
+	gap: 16rpx;
+}
+.result-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 4rpx;
+}
+.result-title {
+	font-size: 28rpx;
+	font-weight: 600;
+	color: #2C2420;
+}
+.result-count {
+	font-size: 24rpx;
+	color: #9C8F85;
+}
+.result-item {
+	display: flex;
+	align-items: center;
+	gap: 18rpx;
+	padding: 16rpx;
+	background: #FDFBF8;
+	border-radius: 16rpx;
+	box-shadow: 0 2rpx 10rpx rgba(44, 36, 32, 0.05);
+}
+.result-cover {
+	width: 92rpx;
+	height: 128rpx;
+	border-radius: 8rpx;
+	background: #E8E2D8;
+	flex-shrink: 0;
+}
+.result-info {
+	flex: 1;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 8rpx;
+}
+.result-name {
+	font-size: 30rpx;
+	font-weight: 600;
+	color: #2C2420;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.result-author,
+.result-tags {
+	font-size: 24rpx;
+	color: #9C8F85;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.result-arrow {
+	font-size: 30rpx;
+	color: #D4CBC0;
+	flex-shrink: 0;
 }
 
 /* ====== Empty State ====== */
