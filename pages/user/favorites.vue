@@ -45,7 +45,7 @@ const loadFavorites = () => {
 
 	isLoading.value = true;
 	request({
-		url: 'http://localhost:8080/user/favorites',
+		url: 'https://api.shuangyuhub.com/user/favorites',
 		method: 'GET'
 	})
 	.then((res) => {

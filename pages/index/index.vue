@@ -114,7 +114,7 @@ const hotBookList = ref([]);
 
 const getHomeData = () => {
 	uni.request({
-		url: 'http://localhost:8080/book/home',
+		url: 'https://api.shuangyuhub.com/book/home',
 		method: 'GET',
 		success: (res) => {
 			if (res.statusCode === 200 && res.data && res.data.data) {

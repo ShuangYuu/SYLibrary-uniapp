@@ -120,7 +120,7 @@ const handleSearch = () => {
 	hasSearched.value = true
 	isLoading.value = true
 	uni.request({
-		url: 'http://localhost:8080/book/page',
+		url: 'https://api.shuangyuhub.com/book/page',
 		method: 'GET',
 		data: {
 			name: value,

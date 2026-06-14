@@ -88,7 +88,7 @@ const handleFavorite = () => {
 	}
 
 	request({
-		url: `http://localhost:8080/user/favorites/${book.value.book_id}`,
+		url: `https://api.shuangyuhub.com/user/favorites/${book.value.book_id}`,
 		method: isFavorite.value ? 'DELETE' : 'POST'
 	})
 	.then((res) => {
@@ -111,7 +111,7 @@ const loadFavoriteState = () => {
 	}
 
 	request({
-		url: `http://localhost:8080/user/favorites/${book.value.book_id}`,
+		url: `https://api.shuangyuhub.com/user/favorites/${book.value.book_id}`,
 		method: 'GET'
 	})
 	.then((res) => {

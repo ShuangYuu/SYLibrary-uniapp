@@ -76,7 +76,7 @@ const handleLogin = () => {
 	isLoading.value = true;
 
 	uni.request({
-		url: 'http://localhost:8080/user/login/password',
+		url: 'https://api.shuangyuhub.com/user/login/password',
 		method: 'POST',
 		data: form,
 		success: (res) => {
@@ -85,7 +85,6 @@ const handleLogin = () => {
 				uni.setStorageSync('refreshToken', res.data.data.refreshToken);
 
 				uni.showToast({ title: '登录成功', icon: 'success' });
-				console.log('登录成功: ', res.data.data.accessToken);
 
 				uni.switchTab({ url: '/pages/index/index' });
 			}

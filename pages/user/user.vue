@@ -108,7 +108,7 @@ const getUserInfo = () => {
 	}
 
 	request({
-		url: 'http://localhost:8080/user/info',
+		url: 'https://api.shuangyuhub.com/user/info',
 		method: 'GET',
 	})
 	.then((res) => {
@@ -136,7 +136,7 @@ const getFavoriteCount = () => {
 	}
 
 	request({
-		url: 'http://localhost:8080/user/favorites',
+		url: 'https://api.shuangyuhub.com/user/favorites',
 		method: 'GET'
 	})
 	.then((res) => {
@@ -159,7 +159,7 @@ const logout = () => {
 	const refreshToken = uni.getStorageSync('refreshToken');
 
 	request({
-		url: 'http://localhost:8080/user/deleteToken',
+		url: 'https://api.shuangyuhub.com/user/deleteToken',
 		method: 'POST',
 		data: {
 			refreshToken: refreshToken
