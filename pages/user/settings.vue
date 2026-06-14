@@ -1,11 +1,11 @@
 <template>
 	<view class="page-settings">
 		<!-- Avatar Preview -->
-		<view class="avatar-section">
+		<view class="avatar-section" @click="chooseAvatar">
 			<view class="avatar-wrap">
 				<image
 					class="avatar-img"
-					:src="userInfo.userImage"
+					:src="userInfo.userImage || '/static/logo.png'"
 					mode="aspectFill"
 				/>
 				<view class="avatar-ring" />
@@ -19,6 +19,7 @@
 				class="info-item"
 				v-for="(item, index) in infoTable"
 				:key="index"
+				@click="handleInfoClick(item)"
 			>
 				<view class="info-item-left">
 					<text class="info-item-label">{{ item.name }}</text>
@@ -27,7 +28,7 @@
 					<view v-if="item.type === 'image'">
 						<image
 							class="info-avatar"
-							:src="userInfo[item.key]"
+							:src="userInfo[item.key] || '/static/logo.png'"
 							mode="aspectFill"
 						/>
 					</view>
@@ -47,6 +48,9 @@
 <script setup>
 import { ref } from 'vue';
 import { onLoad } from '@dcloudio/uni-app';
+import { buildApiUrl } from '@/utils/config.js';
+
+const MAX_AVATAR_SIZE = 2 * 1024 * 1024;
 
 const userInfo = ref({
 	username: '',
@@ -59,6 +63,72 @@ const infoTable = [
 	{ name: '修改头像', key: 'userImage', type: 'image' },
 	{ name: '修改手机号', key: 'phone', type: 'text' },
 ];
+
+const chooseAvatar = () => {
+	if (!uni.getStorageSync('accessToken')) {
+		uni.showToast({ title: '请先登录', icon: 'none' });
+		uni.reLaunch({ url: '/pages/user/login' });
+		return;
+	}
+
+	uni.chooseImage({
+		count: 1,
+		sizeType: ['compressed'],
+		sourceType: ['album', 'camera'],
+		success: (chooseRes) => {
+			const filePath = chooseRes.tempFilePaths && chooseRes.tempFilePaths[0];
+			const file = chooseRes.tempFiles && chooseRes.tempFiles[0];
+			if (file && file.size > MAX_AVATAR_SIZE) {
+				uni.showToast({ title: '头像不能超过2MB', icon: 'none' });
+				return;
+			}
+			if (filePath) {
+				uploadAvatar(filePath);
+			}
+		}
+	});
+}
+
+const uploadAvatar = (filePath) => {
+	uni.showLoading({ title: '上传中...' });
+	uni.uploadFile({
+		url: buildApiUrl('/user/avatar'),
+		filePath,
+		name: 'file',
+		header: {
+			Authorization: `Bearer ${uni.getStorageSync('accessToken')}`
+		},
+		success: (uploadRes) => {
+			let result;
+			try {
+				result = JSON.parse(uploadRes.data);
+			} catch (e) {
+				uni.showToast({ title: '头像上传失败', icon: 'none' });
+				return;
+			}
+
+			if (uploadRes.statusCode === 200 && result.code === 200) {
+				userInfo.value.userImage = result.data;
+				uni.setStorageSync('avatarUpdatedAt', Date.now());
+				uni.showToast({ title: '头像已更新', icon: 'success' });
+			} else {
+				uni.showToast({ title: result.msg || '头像上传失败', icon: 'none' });
+			}
+		},
+		fail: () => {
+			uni.showToast({ title: '头像上传失败', icon: 'none' });
+		},
+		complete: () => {
+			uni.hideLoading();
+		}
+	});
+}
+
+const handleInfoClick = (item) => {
+	if (item.key === 'userImage') {
+		chooseAvatar();
+	}
+}
 
 onLoad((options) => {
 	if(options.user){

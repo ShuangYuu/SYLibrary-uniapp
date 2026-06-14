@@ -1,69 +1,80 @@
 <template>
 	<view class="page-login">
-		<!-- Decorative Header -->
-		<view class="login-header">
-			<view class="login-header-deco" />
-			<text class="login-welcome">欢迎回来</text>
-			<text class="login-subtitle">登录您的读者账户</text>
-		</view>
-
-		<!-- Login Card -->
-		<view class="login-card">
-			<view class="login-card-inner">
-				<!-- Phone Input -->
-				<view class="input-group">
-					<text class="input-label">手机号</text>
-					<view class="input-field" :class="{'input-field-active': focusedField === 'phone'}">
-						<text class="input-icon">&#x1F4F1;</text>
-						<input
-							type="text"
-							v-model="form.phone"
-							placeholder="请输入手机号码"
-							maxlength="11"
-							placeholder-style="color: #D4CBC0"
-							@focus="focusedField = 'phone'"
-							@blur="focusedField = ''"
-						/>
-					</view>
-				</view>
-
-				<!-- Password Input -->
-				<view class="input-group">
-					<text class="input-label">密码</text>
-					<view class="input-field" :class="{'input-field-active': focusedField === 'password'}">
-						<text class="input-icon">&#x1F512;</text>
-						<input
-							type="password"
-							v-model="form.password"
-							placeholder="请输入密码"
-							placeholder-style="color: #D4CBC0"
-							@focus="focusedField = 'password'"
-							@blur="focusedField = ''"
-						/>
-					</view>
-				</view>
-
-				<!-- Login Button -->
-				<button
-					class="login-btn"
-					:disabled="isLoading"
-					@click="handleLogin"
-				>
-					<text v-if="!isLoading">登录</text>
-					<text v-else>登录中...</text>
-				</button>
+		<view class="login-nav">
+			<view class="nav-back" @click="handleBack">
+				<text class="nav-back-icon">&lt;</text>
 			</view>
+			<text class="nav-title">读者登录</text>
+			<view class="nav-placeholder" />
 		</view>
 
-		<!-- Footer -->
-		<view class="login-footer">
-			<text class="login-footer-text">首次使用？请联系图书馆管理员开通账户</text>
+		<view class="login-content">
+			<!-- Decorative Header -->
+			<view class="login-header">
+				<view class="login-header-deco" />
+				<text class="login-welcome">欢迎回来</text>
+				<text class="login-subtitle">登录您的读者账户</text>
+			</view>
+
+			<!-- Login Card -->
+			<view class="login-card">
+				<view class="login-card-inner">
+					<!-- Phone Input -->
+					<view class="input-group">
+						<text class="input-label">手机号</text>
+						<view class="input-field" :class="{'input-field-active': focusedField === 'phone'}">
+							<text class="input-icon">&#x1F4F1;</text>
+							<input
+								type="text"
+								v-model="form.phone"
+								placeholder="请输入手机号码"
+								maxlength="11"
+								placeholder-style="color: #D4CBC0"
+								@focus="focusedField = 'phone'"
+								@blur="focusedField = ''"
+							/>
+						</view>
+					</view>
+
+					<!-- Password Input -->
+					<view class="input-group">
+						<text class="input-label">密码</text>
+						<view class="input-field" :class="{'input-field-active': focusedField === 'password'}">
+							<text class="input-icon">&#x1F512;</text>
+							<input
+								type="password"
+								v-model="form.password"
+								placeholder="请输入密码"
+								placeholder-style="color: #D4CBC0"
+								@focus="focusedField = 'password'"
+								@blur="focusedField = ''"
+							/>
+						</view>
+					</view>
+
+					<!-- Login Button -->
+					<button
+						class="login-btn"
+						:disabled="isLoading"
+						@click="handleLogin"
+					>
+						<text v-if="!isLoading">登录</text>
+						<text v-else>登录中...</text>
+					</button>
+				</view>
+			</view>
+
+			<!-- Footer -->
+			<view class="login-footer">
+				<text class="login-footer-text">首次使用？请联系图书馆管理员开通账户</text>
+			</view>
 		</view>
 	</view>
 </template>
 
 <script setup>
 import { reactive, ref } from 'vue';
+import { buildApiUrl } from '@/utils/config.js';
 
 const isLoading = ref(false)
 const focusedField = ref('')
@@ -72,11 +83,21 @@ const form = reactive({
 	password: ''
 })
 
+const handleBack = () => {
+	const pages = getCurrentPages();
+	if (pages.length > 1) {
+		uni.navigateBack();
+		return;
+	}
+
+	uni.switchTab({ url: '/pages/index/index' });
+}
+
 const handleLogin = () => {
 	isLoading.value = true;
 
 	uni.request({
-		url: 'https://api.shuangyuhub.com/user/login/password',
+		url: buildApiUrl('/user/login/password'),
 		method: 'POST',
 		data: form,
 		success: (res) => {
@@ -105,13 +126,53 @@ const handleLogin = () => {
 
 <style scoped>
 .page-login {
-	max-width: 750rpx;
-	margin: 0 auto;
 	min-height: 100vh;
 	background: #F5F0E8;
 	display: flex;
 	flex-direction: column;
+}
+.login-content {
+	width: 100%;
+	max-width: 750rpx;
+	margin: 0 auto;
 	padding: 0 40rpx;
+	box-sizing: border-box;
+}
+
+.login-nav {
+	height: 88rpx;
+	width: 100%;
+	padding: 0 24rpx;
+	background: #1B2A4A;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	box-sizing: border-box;
+}
+.nav-back,
+.nav-placeholder {
+	width: 64rpx;
+	height: 64rpx;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+}
+.nav-back:active {
+	opacity: 0.75;
+}
+.nav-back-icon {
+	font-size: 34rpx;
+	line-height: 1;
+	color: #FDFBF8;
+	font-weight: 600;
+}
+.nav-title {
+	flex: 1;
+	font-size: 32rpx;
+	font-weight: 700;
+	color: #FDFBF8;
+	text-align: center;
 }
 
 /* ====== Header ====== */

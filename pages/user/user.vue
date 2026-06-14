@@ -77,19 +77,22 @@ import { onShow } from '@dcloudio/uni-app';
 import { ref } from 'vue';
 import request from '@/utils/request'
 
+const DEFAULT_AVATAR = '/static/logo.png'
+
 const userInfo = ref({
 	id: '',
 	username: '',
-	userImage: '',
+	userImage: DEFAULT_AVATAR,
 	phone: ''
 })
 const favoriteCount = ref(0)
+const lastAvatarUpdatedAt = ref(0)
 
 const resetUserInfo = () => {
 	userInfo.value = {
 		id: '',
 		username: '',
-		userImage: '',
+		userImage: DEFAULT_AVATAR,
 		phone: ''
 	};
 	favoriteCount.value = 0;
@@ -108,12 +111,15 @@ const getUserInfo = () => {
 	}
 
 	request({
-		url: 'https://api.shuangyuhub.com/user/info',
+		url: '/user/info',
 		method: 'GET',
 	})
 	.then((res) => {
 		if(res.code === 200){
-			userInfo.value = res.data;
+			userInfo.value = {
+				...res.data,
+				userImage: res.data.userImage || DEFAULT_AVATAR
+			};
 			console.log("用户信息: ", userInfo);
 			console.log("实际图片地址: ", userInfo.value.userImage);
 		}
@@ -136,7 +142,7 @@ const getFavoriteCount = () => {
 	}
 
 	request({
-		url: 'https://api.shuangyuhub.com/user/favorites',
+		url: '/user/favorites',
 		method: 'GET'
 	})
 	.then((res) => {
@@ -150,6 +156,10 @@ const getFavoriteCount = () => {
 }
 
 onShow(() => {
+	const avatarUpdatedAt = Number(uni.getStorageSync('avatarUpdatedAt') || 0);
+	if (avatarUpdatedAt !== lastAvatarUpdatedAt.value) {
+		lastAvatarUpdatedAt.value = avatarUpdatedAt;
+	}
 	getUserInfo();
 	getFavoriteCount();
 })
@@ -159,7 +169,7 @@ const logout = () => {
 	const refreshToken = uni.getStorageSync('refreshToken');
 
 	request({
-		url: 'https://api.shuangyuhub.com/user/deleteToken',
+		url: '/user/deleteToken',
 		method: 'POST',
 		data: {
 			refreshToken: refreshToken

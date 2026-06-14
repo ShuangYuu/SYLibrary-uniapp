@@ -107,6 +107,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { buildApiUrl } from '@/utils/config.js'
 
 const swiperList = ref([]);
 const recentBookList = ref([]);
@@ -114,7 +115,7 @@ const hotBookList = ref([]);
 
 const getHomeData = () => {
 	uni.request({
-		url: 'https://api.shuangyuhub.com/book/home',
+		url: buildApiUrl('/book/home'),
 		method: 'GET',
 		success: (res) => {
 			if (res.statusCode === 200 && res.data && res.data.data) {

@@ -93,6 +93,7 @@
 
 <script setup>
 import { ref } from 'vue'
+import { buildApiUrl } from '@/utils/config.js'
 
 const keyword = ref('')
 const searchHistory = ref([])
@@ -120,7 +121,7 @@ const handleSearch = () => {
 	hasSearched.value = true
 	isLoading.value = true
 	uni.request({
-		url: 'https://api.shuangyuhub.com/book/page',
+		url: buildApiUrl('/book/page'),
 		method: 'GET',
 		data: {
 			name: value,

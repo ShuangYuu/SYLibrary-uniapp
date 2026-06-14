@@ -1,18 +1,13 @@
-const API_BASE_URL = 'https://api.shuangyuhub.com';
-const REFRESH_URL = `${API_BASE_URL}/user/refresh`;
+import { buildApiUrl } from './config.js';
+
+const REFRESH_URL = buildApiUrl('/user/refresh');
 const LOGIN_PATH = '/pages/user/login';
 
 let requestsQueue = [];
 let isRefreshing = false;
 
 function normalizeUrl(url) {
-    if (!url) {
-        return API_BASE_URL;
-    }
-    if (url.startsWith('http://') || url.startsWith('https://')) {
-        return url;
-    }
-    return `${API_BASE_URL}${url.startsWith('/') ? url : `/${url}`}`;
+    return buildApiUrl(url);
 }
 
 function clearTokensAndRedirect() {
