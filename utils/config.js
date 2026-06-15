@@ -1,4 +1,4 @@
-const API_ENV = 'dev';
+const API_ENV = 'prod';
 
 const API_BASE_URLS = {
     dev: 'http://localhost:8080',
