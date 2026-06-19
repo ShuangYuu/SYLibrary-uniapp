@@ -120,11 +120,7 @@ utils/request.js
 
 ## 运行方式
 
-推荐使用 HBuilderX 打开项目目录：
-
-```text
-D:\1JAVA\HBuilderX.4.76.2025082103\HBuilderProjects\SYLibrary-uniapp
-```
+推荐使用 HBuilderX 打开本项目根目录。
 
 常用运行方式：
 
@@ -142,4 +138,5 @@ D:\1JAVA\HBuilderX.4.76.2025082103\HBuilderProjects\SYLibrary-uniapp
 - 收藏功能依赖用户登录状态，没有 Token 时会跳转到登录页。
 - 新增页面后需要同步维护 `pages.json` 和必要的 TabBar 配置。
 - `uni_modules/` 中是组件依赖，通常不要手动大范围改动。
+
 
